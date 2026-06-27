@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard · Gestión de citas médicas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #f3f4f6;
+    --surface: #ffffff;
+    --border: #e3e6ec;
+    --border-bright: #cdd3dd;
+    --text: #1c2333;
+    --muted: #5b6577;
+    --dimmed: #8d96a8;
+    --blue: #2f5fa8;
+    --blue-soft: rgba(47,95,168,0.08);
+    --green: #1f7a52;
+    --amber: #b07d1e;
+    --red: #b3392c;
+    --violet: #5c5470;
+    --radius: 10px;
+    --radius-sm: 7px;
+    --shadow-card: 0 1px 2px rgba(16,24,40,0.04), 0 1px 1px rgba(16,24,40,0.03);
+    --font-display: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 36px 32px 52px;
+    overflow-x: hidden;
+}
+
+.shell { max-width: 1520px; margin: 0 auto; position: relative; z-index: 1; }
+
+/* ── HEADER ────────────────────────────────────────────── */
+header {
+    margin-bottom: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-bright);
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--blue);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+.eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 16px; height: 2px;
+    background: var(--blue);
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+h1 {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.6vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    line-height: 1.18;
+    color: var(--text);
+    max-width: 900px;
+}
+h1 em {
+    font-style: normal;
+    color: var(--blue);
+}
+
+.subtitle {
+    max-width: 820px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.65;
+    font-weight: 400;
+    margin-top: 12px;
+}
+
+/* ── CONTROLS ──────────────────────────────────────────── */
+.controls {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+}
+
+button {
+    font-family: var(--font-body);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+button:hover {
+    color: var(--text);
+    border-color: var(--border-bright);
+    background: #fafbfc;
+}
+button.active {
+    color: #fff;
+    border-color: var(--blue);
+    background: var(--blue);
+}
+
+/* ── KPIs ──────────────────────────────────────────────── */
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--kpi-c, var(--blue));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 20px 18px 18px;
+    position: relative;
+}
+.kpi:nth-child(1) { --kpi-c: var(--blue); }
+.kpi:nth-child(2) { --kpi-c: var(--green); }
+.kpi:nth-child(3) { --kpi-c: var(--amber); }
+.kpi:nth-child(4) { --kpi-c: var(--red); }
+
+.kpi-label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 9px;
+    letter-spacing: 0.01em;
+}
+.kpi-value {
+    font-family: var(--font-display);
+    font-size: 27px;
+    font-weight: 700;
+    letter-spacing: -0.6px;
+    line-height: 1;
+    color: var(--text);
+}
+.kpi-note {
+    color: var(--dimmed);
+    font-size: 11.5px;
+    line-height: 1.45;
+    margin-top: 10px;
+    font-weight: 400;
+}
+
+/* ── GRID ──────────────────────────────────────────────── */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.wide { grid-column: 1 / -1; }
+
+/* ── CARD ──────────────────────────────────────────────── */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    min-height: 340px;
+}
+
+.chart-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+    flex-shrink: 0;
+}
+.chart-title {
+    font-family: var(--font-display);
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.1px;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+.chart-desc {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+    font-weight: 400;
+}
+.source-tag {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--dimmed);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.chart { width: 100%; flex: 1; min-height: 260px; }
+.chart.tall { min-height: 400px; }
+
+/* ── LEGEND ────────────────────────────────────────────── */
+.legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 12px;
+    flex-shrink: 0;
+}
+.dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+/* ── TOOLTIP ───────────────────────────────────────────── */
+.tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: #ffffff;
+    color: var(--text);
+    padding: 9px 13px;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-family: var(--font-body);
+    transform: translate(-50%, calc(-100% - 14px));
+    opacity: 0;
+    transition: opacity 0.1s ease;
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(16,24,40,0.14);
+    line-height: 1.55;
+    max-width: 210px;
+}
+
+/* ── FOOTER ────────────────────────────────────────────── */
+footer {
+    margin-top: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 22px 26px;
+}
+.ref-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--dimmed);
+    margin-bottom: 14px;
+}
+.sources-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    list-style: none;
+}
+.sources-grid li {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-weight: 400;
+}
+.sources-grid li strong {
+    display: block;
+    color: var(--text);
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+/* ── UTIL ──────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 1100px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid { grid-template-columns: 1fr; }
+    .wide { grid-column: 1; }
+    .sources-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+    body { padding: 20px 16px 44px; }
+    h1 { font-size: 24px; }
+    .kpis { grid-template-columns: 1fr; }
+    .chart { min-height: 220px; }
+    .sources-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+    <header>
+        <div class="eyebrow">Dashboard diagnóstico · Problemática del proyecto</div>
+        <h1>Gestión de citas médicas<br><em>en hospitales públicos</em></h1>
+        <p class="subtitle">
+            Indicadores para sustentar la demora y limitada eficiencia en la gestión de citas médicas:
+            demanda de consulta externa, digitalización, lugares específicos de atención, referencias especializadas y barreras reportadas por la población.
+        </p>
+    </header>
+
+    <div class="controls">
+        <button class="active" data-view="general">Vista general</button>
+        <button data-view="demanda">Demanda y digitalización</button>
+        <button data-view="acceso">Acceso y barreras</button>
+        <button data-view="demoras">Demoras especializadas</button>
+    </div>
+
+    <section class="kpis">
+        <div class="kpi">
+            <div class="kpi-label">Consultas externas proyectadas</div>
+            <div class="kpi-value">24.6 M</div>
+            <div class="kpi-note">EsSalud, 2025. Proyección nacional de consulta externa.</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Citas médicas en línea</div>
+            <div class="kpi-value">120,344</div>
+            <div class="kpi-note">MINSA, 2024. Citas generadas en línea.</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Crecimiento de establecimientos</div>
+            <div class="kpi-value">8 → 250</div>
+            <div class="kpi-note">Expansión de establecimientos con citas en línea, 2023–2024.</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Citas no concretadas</div>
+            <div class="kpi-value">917 mil</div>
+            <div class="kpi-note">Ene–ago 2025. Cupos programados no concretados.</div>
+        </div>
+    </section>
+
+    <main class="grid">
+        <section class="card view demanda general">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Consultas externas EsSalud</div>
+                    <div class="chart-desc">Comparación entre atenciones registradas y proyección anual.</div>
+                </div>
+                <div class="source-tag">EsSalud / Gob.pe</div>
+            </div>
+            <svg id="chartDemanda" class="chart"></svg>
+        </section>
+
+        <section class="card view demanda general">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Expansión de citas en línea</div>
+                    <div class="chart-desc">Establecimientos con sistema de citas digitales.</div>
+                </div>
+                <div class="source-tag">MINSA / Gob.pe</div>
+            </div>
+            <svg id="chartDigital" class="chart"></svg>
+        </section>
+
+        <section class="card view acceso general">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Lugar específico de atención ante problemas de salud</div>
+                    <div class="chart-desc">Categorías específicas reportadas para el IV trimestre de 2024.</div>
+                </div>
+                <div class="source-tag">INEI / ENAHO</div>
+            </div>
+            <svg id="chartAcceso" class="chart"></svg>
+        </section>
+
+        <section class="card view acceso general">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Pareto de barreras de acceso</div>
+                    <div class="chart-desc">Razones de no atención reportadas por personas con afección que no acudieron a un establecimiento.</div>
+                </div>
+                <div class="source-tag">BCRP / ENAHO</div>
+            </div>
+            <svg id="chartPareto" class="chart"></svg>
+            <div class="legend">
+                <span><span class="dot" style="background:#b07d1e"></span>Frecuencia base 1000</span>
+                <span><span class="dot" style="background:#2f5fa8"></span>Acumulado normalizado</span>
+            </div>
+        </section>
+
+        <section class="card wide view demoras general">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Tiempo máximo total por especialidad</div>
+                    <div class="chart-desc">Suma de aceptación de referencia y espera para atención en institutos especializados.</div>
+                </div>
+                <div class="source-tag">Defensoría del Pueblo</div>
+            </div>
+            <svg id="chartEspecialidades" class="chart tall"></svg>
+        </section>
+
+        <section class="card view demoras">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Máximos reportados por región</div>
+                    <div class="chart-desc">Casos de diferimiento de citas médicas por región y especialidad.</div>
+                </div>
+                <div class="source-tag">RPP Data / EsSalud</div>
+            </div>
+            <svg id="chartRegiones" class="chart"></svg>
+        </section>
+
+        <section class="card view acceso">
+            <div class="chart-head">
+                <div>
+                    <div class="chart-title">Evolución de la demora como barrera</div>
+                    <div class="chart-desc">Porcentaje que reporta demora en atención como razón para no acudir a establecimiento.</div>
+                </div>
+                <div class="source-tag">BCRP / ENAHO</div>
+            </div>
+            <svg id="chartTendencia" class="chart"></svg>
+        </section>
+    </main>
+
+    <footer>
+        <div class="ref-title">Fuentes de los datos</div>
+        <ol class="sources-grid">
+            <li><strong>EsSalud, 2025</strong>Consultas externas registradas en 2024 y proyección de consultas externas para 2025.</li>
+            <li><strong>MINSA, 2025</strong>Citas médicas en línea generadas durante 2024, personas beneficiadas y establecimientos con sistema de citas digitales.</li>
+            <li><strong>INEI, 2025</strong>Resultados sobre lugar de atención ante problemas de salud, IV trimestre de 2024.</li>
+            <li><strong>Defensoría del Pueblo, 2025</strong>Informe Defensorial n.° 243 sobre institutos especializados de salud, tiempos de referencia y espera para atención.</li>
+            <li><strong>BCRP / Mundaca, 2024</strong>Análisis basado en ENAHO sobre atención en salud, tiempos de espera y barreras de acceso.</li>
+            <li><strong>RPP Data / EsSalud, 2025</strong>Casos reportados de diferimiento de citas por región y especialidad.</li>
+        </ol>
+    </footer>
+
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const DATA = {"demanda":[{"anio":"2024","consultas":23412881,"tipo":"Real"},{"anio":"2025","consultas":24619513,"tipo":"Proyección"}],"digitalizacion":[{"anio":"2023","establecimientos":8},{"anio":"2024","establecimientos":250}],"acceso":[{"categoria":"Farmacia o botica","porcentaje":21.5},{"categoria":"MINSA","porcentaje":13.9},{"categoria":"EsSalud","porcentaje":4.8}],"especialidades":[{"especialidad":"Epilepsia","referencia":8,"atencion":55,"total":63},{"especialidad":"Neurorrehabilitación","referencia":8,"atencion":55,"total":63},{"especialidad":"Retina y Vítreo","referencia":8,"atencion":55,"total":63},{"especialidad":"Oftalmología","referencia":8,"atencion":52,"total":60},{"especialidad":"Endocrinología","referencia":8,"atencion":46,"total":54},{"especialidad":"Neurotransmisibles","referencia":8,"atencion":42,"total":50},{"especialidad":"Psiquiatría","referencia":8,"atencion":42,"total":50},{"especialidad":"Cardiología","referencia":8,"atencion":38,"total":46},{"especialidad":"Medicina de rehabilitación","referencia":8,"atencion":38,"total":46},{"especialidad":"Neumología","referencia":8,"atencion":38,"total":46},{"especialidad":"Neurodegenerativas","referencia":8,"atencion":37,"total":45},{"especialidad":"Neurooftalmología","referencia":8,"atencion":36,"total":44}],"essalud_casos":[{"region":"La Libertad","especialidad":"Medicina general","dias":155},{"region":"Huánuco","especialidad":"Nutrición","dias":154},{"region":"Lambayeque","especialidad":"Medicina general","dias":132},{"region":"Lima","especialidad":"Endocrinología","dias":105}],"pareto":[{"causa":"Automedicación / no era necesario","prevalencia":73.8,"base1000":738,"acum":62.49},{"causa":"Demora en atención","prevalencia":13.9,"base1000":139,"acum":74.26},{"causa":"Falta de tiempo","prevalencia":12.6,"base1000":126,"acum":84.93},{"causa":"Mala atención","prevalencia":6.9,"base1000":69,"acum":90.77},{"causa":"No tiene dinero / seguro","prevalencia":6.1,"base1000":61,"acum":95.94},{"causa":"Se encuentra lejos","prevalencia":4.8,"base1000":48,"acum":100}],"tendencia_demora":[{"anio":"2013","porcentaje":8.5},{"anio":"2019","porcentaje":11.5},{"anio":"2023","porcentaje":13.9}],"inasistencias":{"no_concretadas":917000,"perdidas_dia":3820},"acceso_general":{"busco_atencion_establecimiento":46.2}};
+
+const fmt = new Intl.NumberFormat('es-PE');
+const tooltip = document.getElementById('tooltip');
+
+function showTip(evt, html) {
+    tooltip.innerHTML = html;
+    tooltip.style.left = evt.clientX + 'px';
+    tooltip.style.top = evt.clientY + 'px';
+    tooltip.style.opacity = 1;
+}
+function hideTip() { tooltip.style.opacity = 0; }
+function clear(svg) { while (svg.firstChild) svg.removeChild(svg.firstChild); }
+function svgEl(tag, attrs = {}) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    return el;
+}
+function addText(svg, x, y, text, opts = {}) {
+    const t = svgEl('text', {
+        x, y,
+        fill: opts.fill || '#5b6577',
+        'font-size': opts.size || 11.5,
+        'font-weight': opts.weight || 400,
+        'text-anchor': opts.anchor || 'start',
+        'font-family': 'Inter, sans-serif',
+    });
+    t.textContent = text;
+    svg.appendChild(t);
+    return t;
+}
+function wrapText(svg, text, x, y, width, lineHeight, opts = {}) {
+    const words = text.split(' ');
+    let line = '', lines = [];
+    for (let w of words) {
+        const test = line ? line + ' ' + w : w;
+        if (test.length * 5.8 > width && line) { lines.push(line); line = w; }
+        else line = test;
+    }
+    lines.push(line);
+    lines.forEach((l, i) => addText(svg, x, y + i * lineHeight, l, opts));
+}
+function gridLine(svg, x1, y1, x2, y2) {
+    svg.appendChild(svgEl('line', { x1, y1, x2, y2, stroke: 'rgba(28,35,51,0.07)', 'stroke-dasharray': '3,5' }));
+}
+
+// ── BAR CHART ─────────────────────────────────────────────
+function barChart(svgId, data, opts) {
+    const svg = document.getElementById(svgId); clear(svg);
+    const W = svg.clientWidth || 600, H = svg.clientHeight || 280;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const m = { top: 26, right: 20, bottom: 44, left: 54 };
+    const iW = W - m.left - m.right, iH = H - m.top - m.bottom;
+    const max = Math.max(...data.map(d => d.value)) * 1.16;
+    const bw = iW / data.length * 0.5;
+    const gap = iW / data.length;
+
+    for (let i = 0; i <= 4; i++) {
+        const y = m.top + iH - (i / 4) * iH;
+        gridLine(svg, m.left, y, W - m.right, y);
+        if (i > 0) addText(svg, 4, y + 4, opts.format ? opts.format(Math.round((max / 4) * i)) : fmt.format(Math.round((max / 4) * i)), { size: 9.5, fill: '#8d96a8' });
+    }
+    svg.appendChild(svgEl('line', { x1: m.left, y1: m.top + iH, x2: W - m.right, y2: m.top + iH, stroke: 'rgba(28,35,51,0.18)' }));
+
+    data.forEach((d, i) => {
+        const x = m.left + i * gap + (gap - bw) / 2;
+        const h = (d.value / max) * iH;
+        const y = m.top + iH - h;
+        const color = d.color || '#2f5fa8';
+        const rect = svgEl('rect', { x, y, width: bw, height: h, rx: 4, fill: color });
+        rect.addEventListener('mousemove', e => showTip(e, `<b>${d.label}</b><br>${opts.unit || ''} ${opts.format ? opts.format(d.value) : fmt.format(d.value)}`));
+        rect.addEventListener('mouseleave', hideTip);
+        svg.appendChild(rect);
+        addText(svg, x + bw / 2, y - 8, opts.format ? opts.format(d.value) : fmt.format(d.value), { anchor: 'middle', fill: '#1c2333', weight: 700, size: 12 });
+        addText(svg, x + bw / 2, H - 12, d.label, { anchor: 'middle', fill: '#5b6577', size: 11.5 });
+    });
+}
+
+// ── HORIZONTAL BAR ────────────────────────────────────────
+function horizontalBar(svgId, data, opts) {
+    const svg = document.getElementById(svgId); clear(svg);
+    const W = svg.clientWidth || 700, H = svg.clientHeight || 280;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const m = { top: 12, right: 72, bottom: 14, left: opts.left || 180 };
+    const iW = W - m.left - m.right, iH = H - m.top - m.bottom;
+    const max = Math.max(...data.map(d => d.value)) * 1.1;
+    const rowH = iH / data.length;
+
+    data.forEach((d, i) => {
+        const y = m.top + i * rowH + rowH * 0.2;
+        const h = rowH * 0.5;
+        const w = (d.value / max) * iW;
+        const color = d.color || '#1f7a52';
+        svg.appendChild(svgEl('rect', { x: m.left, y, width: iW, height: h, rx: 4, fill: 'rgba(28,35,51,0.05)' }));
+        const rect = svgEl('rect', { x: m.left, y, width: w, height: h, rx: 4, fill: color });
+        rect.addEventListener('mousemove', e => showTip(e, `<b>${d.label}</b><br>${opts.unit || ''} ${opts.format ? opts.format(d.value) : fmt.format(d.value)}`));
+        rect.addEventListener('mouseleave', hideTip);
+        svg.appendChild(rect);
+        addText(svg, m.left - 10, y + h * 0.7, d.label, { anchor: 'end', fill: '#5b6577', size: 11 });
+        addText(svg, m.left + w + 9, y + h * 0.7, opts.format ? opts.format(d.value) : fmt.format(d.value), { fill: '#1c2333', weight: 700, size: 11.5 });
+    });
+}
+
+// ── STACKED BAR ───────────────────────────────────────────
+function stackedBar(svgId, data) {
+    const svg = document.getElementById(svgId); clear(svg);
+    const W = svg.clientWidth || 1000, H = svg.clientHeight || 400;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const m = { top: 14, right: 80, bottom: 32, left: 212 };
+    const iW = W - m.left - m.right, iH = H - m.top - m.bottom;
+    const max = Math.max(...data.map(d => d.total)) * 1.12;
+    const rowH = iH / data.length;
+
+    data.forEach((d, i) => {
+        const y = m.top + i * rowH + rowH * 0.2;
+        const h = rowH * 0.52;
+        const w1 = (d.referencia / max) * iW;
+        const w2 = (d.atencion / max) * iW;
+        svg.appendChild(svgEl('rect', { x: m.left, y, width: iW, height: h, rx: 4, fill: 'rgba(28,35,51,0.05)' }));
+        const r1 = svgEl('rect', { x: m.left, y, width: w1, height: h, rx: 4, fill: '#5c5470' });
+        const r2 = svgEl('rect', { x: m.left + w1, y, width: w2, height: h, rx: 4, fill: '#2f5fa8' });
+        [r1, r2].forEach(r => {
+            r.addEventListener('mousemove', e => showTip(e, `<b>${d.especialidad}</b><br>Referencia: ${d.referencia} días<br>Atención: ${d.atencion} días<br><b>Total: ${d.total} días</b>`));
+            r.addEventListener('mouseleave', hideTip);
+        });
+        svg.appendChild(r1); svg.appendChild(r2);
+        addText(svg, m.left - 10, y + h * 0.68, d.especialidad, { anchor: 'end', fill: '#5b6577', size: 11 });
+        addText(svg, m.left + w1 + w2 + 10, y + h * 0.68, d.total + ' d', { fill: '#1c2333', weight: 700, size: 11.5 });
+    });
+
+    const lx = m.left, ly = H - 4;
+    svg.appendChild(svgEl('rect', { x: lx - 14, y: ly - 9, width: 8, height: 8, rx: 2, fill: '#5c5470' }));
+    addText(svg, lx, ly, 'Referencia', { fill: '#5b6577', size: 11 });
+    svg.appendChild(svgEl('rect', { x: lx + 99, y: ly - 9, width: 8, height: 8, rx: 2, fill: '#2f5fa8' }));
+    addText(svg, lx + 114, ly, 'Espera para atención', { fill: '#5b6577', size: 11 });
+}
+
+// ── PARETO ────────────────────────────────────────────────
+function paretoChart(svgId, data) {
+    const svg = document.getElementById(svgId); clear(svg);
+    const W = svg.clientWidth || 700, H = svg.clientHeight || 260;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const m = { top: 22, right: 54, bottom: 80, left: 44 };
+    const iW = W - m.left - m.right, iH = H - m.top - m.bottom;
+    const max = Math.max(...data.map(d => d.base1000)) * 1.15;
+    const bw = iW / data.length * 0.52;
+    const gap = iW / data.length;
+
+    for (let i = 1; i <= 4; i++) gridLine(svg, m.left, m.top + iH - (i / 4) * iH, W - m.right, m.top + iH - (i / 4) * iH);
+    svg.appendChild(svgEl('line', { x1: m.left, y1: m.top + iH, x2: W - m.right, y2: m.top + iH, stroke: 'rgba(28,35,51,0.18)' }));
+
+    let points = [];
+    data.forEach((d, i) => {
+        const x = m.left + i * gap + (gap - bw) / 2;
+        const h = d.base1000 / max * iH;
+        const y = m.top + iH - h;
+        const rect = svgEl('rect', { x, y, width: bw, height: h, rx: 4, fill: '#b07d1e' });
+        rect.addEventListener('mousemove', e => showTip(e, `<b>${d.causa}</b><br>Base 1000: ${d.base1000}<br>Prevalencia: ${d.prevalencia}%`));
+        rect.addEventListener('mouseleave', hideTip);
+        svg.appendChild(rect);
+        addText(svg, x + bw / 2, y - 7, d.base1000, { anchor: 'middle', fill: '#1c2333', weight: 700, size: 10.5 });
+        wrapText(svg, d.causa, x + bw / 2, H - 65, gap * 0.9, 11, { anchor: 'middle', fill: '#5b6577', size: 9.5 });
+        const py = m.top + iH - (d.acum / 100) * iH;
+        points.push([x + bw / 2, py, d]);
+    });
+
+    for (let i = 0; i < points.length - 1; i++) {
+        svg.appendChild(svgEl('line', { x1: points[i][0], y1: points[i][1], x2: points[i + 1][0], y2: points[i + 1][1], stroke: '#2f5fa8', 'stroke-width': 2.25 }));
+    }
+    points.forEach(([x, y, d]) => {
+        const c = svgEl('circle', { cx: x, cy: y, r: 4, fill: '#2f5fa8', stroke: '#ffffff', 'stroke-width': 2 });
+        c.addEventListener('mousemove', e => showTip(e, `Acumulado: ${d.acum.toFixed(1)}%`));
+        c.addEventListener('mouseleave', hideTip);
+        svg.appendChild(c);
+    });
+}
+
+// ── LINE CHART ────────────────────────────────────────────
+function lineChart(svgId, data) {
+    const svg = document.getElementById(svgId); clear(svg);
+    const W = svg.clientWidth || 600, H = svg.clientHeight || 260;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const m = { top: 30, right: 40, bottom: 44, left: 50 };
+    const iW = W - m.left - m.right, iH = H - m.top - m.bottom;
+    const max = 16, min = 0;
+
+    for (let i = 0; i <= 4; i++) {
+        const y = m.top + iH - (i / 4) * iH;
+        gridLine(svg, m.left, y, W - m.right, y);
+        addText(svg, 4, y + 4, ((max / 4) * i).toFixed(0) + '%', { size: 9.5, fill: '#8d96a8' });
+    }
+    svg.appendChild(svgEl('line', { x1: m.left, y1: m.top + iH, x2: W - m.right, y2: m.top + iH, stroke: 'rgba(28,35,51,0.18)' }));
+
+    const pts = data.map((d, i) => {
+        const x = m.left + i * (iW / (data.length - 1));
+        const y = m.top + iH - ((d.porcentaje - min) / (max - min)) * iH;
+        return [x, y, d];
+    });
+
+    // area
+    const aPoints = `${pts[0][0]},${m.top + iH} ` + pts.map(([x, y]) => `${x},${y}`).join(' ') + ` ${pts[pts.length - 1][0]},${m.top + iH}`;
+    svg.appendChild(svgEl('polygon', { points: aPoints, fill: 'rgba(179,57,44,0.06)' }));
+
+    for (let i = 0; i < pts.length - 1; i++) {
+        svg.appendChild(svgEl('line', { x1: pts[i][0], y1: pts[i][1], x2: pts[i + 1][0], y2: pts[i + 1][1], stroke: '#b3392c', 'stroke-width': 2.5 }));
+    }
+    pts.forEach(([x, y, d]) => {
+        const c = svgEl('circle', { cx: x, cy: y, r: 4.5, fill: '#b3392c', stroke: '#ffffff', 'stroke-width': 2 });
+        c.addEventListener('mousemove', e => showTip(e, `<b>${d.anio}</b><br>Demora: ${d.porcentaje}%`));
+        c.addEventListener('mouseleave', hideTip);
+        svg.appendChild(c);
+        addText(svg, x, y - 16, d.porcentaje + '%', { anchor: 'middle', fill: '#1c2333', weight: 700, size: 12.5 });
+        addText(svg, x, H - 10, d.anio, { anchor: 'middle', fill: '#5b6577', size: 12 });
+    });
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render() {
+    barChart('chartDemanda', DATA.demanda.map((d, i) => ({
+        label: d.anio + (d.tipo === 'Proyección' ? ' →' : ''),
+        value: d.consultas,
+        color: i ? '#1f7a52' : '#2f5fa8'
+    })), { unit: 'Consultas:', format: v => (v / 1e6).toFixed(1) + ' M' });
+
+    barChart('chartDigital', DATA.digitalizacion.map((d, i) => ({
+        label: d.anio, value: d.establecimientos, color: i ? '#1f7a52' : '#5c5470'
+    })), { unit: 'Establecimientos:', format: v => fmt.format(v) });
+
+    horizontalBar('chartAcceso', DATA.acceso.map(d => ({
+        label: d.categoria, value: d.porcentaje, color: '#2f5fa8'
+    })), { left: 165, unit: 'Porcentaje:', format: v => v + '%' });
+
+    paretoChart('chartPareto', DATA.pareto);
+    stackedBar('chartEspecialidades', DATA.especialidades);
+
+    horizontalBar('chartRegiones', DATA.essalud_casos.map(d => ({
+        label: d.region + ' · ' + d.especialidad, value: d.dias, color: '#b3392c'
+    })), { left: 242, unit: 'Días:', format: v => v + ' días' });
+
+    lineChart('chartTendencia', DATA.tendencia_demora);
+}
+
+render();
+window.addEventListener('resize', render);
+
+document.querySelectorAll('button[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('button[data-view]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const view = btn.dataset.view;
+        document.querySelectorAll('.view').forEach(el => {
+            el.classList.toggle('hidden', !(view === 'general'
+                ? el.classList.contains('general')
+                : el.classList.contains(view)));
+        });
+        setTimeout(render, 40);
+    });
+});
+</script>
+</body>
+</html>
